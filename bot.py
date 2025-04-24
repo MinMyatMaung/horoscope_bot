@@ -50,4 +50,29 @@ def fetch_horoscope(message, sign):
         f'*Day:* {data["date"]}'
     )
     bot.send_message(message.chat.id, "Here's your horoscope!")
-    bot.send_message(message.chat.id, horoscope_message, parse
+    bot.send_message(message.chat.id, horoscope_message, parse_mode="Markdown")
+
+@bot.message_handler(func=lambda msg: True)
+def echo_all(message):
+    bot.reply_to(message, message.text)
+
+# --- Flask App to Keep Render Service Alive ---
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Bot is running!"
+
+# --- Run both Telegram bot and Flask app ---
+
+def run_telegram_bot():
+    bot.infinity_polling()
+
+if __name__ == '__main__':
+    # Start the bot in a separate thread
+    threading.Thread(target=run_telegram_bot).start()
+    
+    # Start Flask app on Render-required port
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port)
